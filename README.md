@@ -340,9 +340,24 @@ L'interface utilisateur est construite avec :
    pip install -r requirements.txt
    ```
 
-3. Assurez-vous que le modèle est entraîné :
+3. Assurez-vous d'avoir télécharger les datasets et executer :
    ```
-   python src/models/xgboost_counter_finder.py
+   python src/data_collection/replay_downloader.py
+   ```
+
+3. Pré-traitement des datasets :
+   Traitement des fichier html issue du téléchargement des replay
+   ```
+   python src/data_processing/battle_analyzer.py
+   ```
+   Traitement des pokemon les plus utilisé en tournoi par saison
+   ```
+   python src/data_processing/pokemon_stats_parser.py
+   ```
+
+4. Assurez-vous que le modèle est entraîné :
+   ```
+   python src/models/train_final_model.py
    ```
 
 ## Démarrage
