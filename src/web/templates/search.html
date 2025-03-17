@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokéFight - Recherche de Counters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .pokemon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .pokemon-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .pokemon-card.selected {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+        
+        .pokemon-card img {
+            max-height: 96px;
+            margin: 0 auto;
+        }
+        
+        .pokemon-selection {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .type-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin: 2px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Couleurs pour les types */
+        .type-normal { background-color: #A8A878; }
+        .type-fire { background-color: #F08030; }
+        .type-water { background-color: #6890F0; }
+        .type-electric { background-color: #F8D030; }
+        .type-grass { background-color: #78C850; }
+        .type-ice { background-color: #98D8D8; }
+        .type-fighting { background-color: #C03028; }
+        .type-poison { background-color: #A040A0; }
+        .type-ground { background-color: #E0C068; }
+        .type-flying { background-color: #A890F0; }
+        .type-psychic { background-color: #F85888; }
+        .type-bug { background-color: #A8B820; }
+        .type-rock { background-color: #B8A038; }
+        .type-ghost { background-color: #705898; }
+        .type-dragon { background-color: #7038F8; }
+        .type-dark { background-color: #705848; }
+        .type-steel { background-color: #B8B8D0; }
+        .type-fairy { background-color: #EE99AC; }
+        
+        /* Barre de progression circulaire */
+        .progress-ring {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+        
+        .progress-ring__circle {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            stroke-linecap: round;
+        }
+        
+        .progress-ring__text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        /* Loader */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Message */
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .message-info {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+        
+        .message-error {
+            background-color: #ffebee;
+            border: 1px solid #f44336;
+        }
+        
+        .message-success {
+            background-color: #e8f5e9;
+            border: 1px solid #4caf50;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-red-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center font-bold text-2xl">
+                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">🎮</span>
+                    PokéFight
+                </a>
+                <div class="hidden md:block">
+                    <ul class="flex space-x-6">
+                        <li><a href="/" class="font-medium hover:text-red-200">Accueil</a></li>
+                        <li><a href="/search" class="font-medium hover:text-red-200 underline">Recherche de Counters</a></li>
+                        <li><a href="/compare" class="font-medium hover:text-red-200">Comparaison</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Recherche de Contre-Pokémon</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">Sélectionnez vos Pokémon (max 6)</h2>
+            
+            <div class="mb-4">
+                <label for="pokemonSearch" class="block text-sm font-medium text-gray-700 mb-1">Rechercher un Pokémon:</label>
+                <div class="flex">
+                    <input type="text" id="pokemonSearch" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Entrez un nom de Pokémon...">
+                </div>
+            </div>
+            
+            <div id="selectionInfo" class="mb-4 flex items-center">
+                <span class="mr-2">Pokémon sélectionnés: <span id="selectedCount">0</span>/6</span>
+            </div>
+            
+            <div id="selectedPokemonList" class="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200 hidden">
+                <h3 class="font-medium text-blue-800 mb-2">Pokémon sélectionnés:</h3>
+                <div id="selectedPokemonTags" class="flex flex-wrap gap-2"></div>
+            </div>
+            
+            <div id="messageContainer"></div>
+            
+            <div id="pokemonSelection" class="pokemon-selection mb-6">
+                <div id="pokemonGrid" class="pokemon-grid">
+                    <!-- Les cartes de Pokémon seront ajoutées ici dynamiquement -->
+                    <div class="loader" id="selectionLoader"></div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="counterCount" class="block text-sm font-medium text-gray-700 mb-1">Nombre de counters à afficher:</label>
+                <input type="number" id="counterCount" min="1" max="10" value="5" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <button id="findCountersButton" class="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-bold">Trouver les Counters</button>
+        </div>
+        
+        <div id="resultsContainer" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <h2 class="text-xl font-bold mb-4">Résultats</h2>
+            <div id="resultsLoader" class="loader hidden"></div>
+            <div id="counterResults"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let allPokemon = [];
+        let selectedPokemon = [];
+        let allPokemonTypes = {}; // Pour stocker les types récupérés depuis l'API
+        const apiBaseUrl = '/api';
+        
+        // Types prédéfinis pour quelques Pokémon populaires (fallback)
+        const pokemonTypes = {
+            'Pikachu': ['Electric', null],
+            'Charizard': ['Fire', 'Flying'],
+            'Bulbasaur': ['Grass', 'Poison'],
+            'Squirtle': ['Water', null],
+            'Mewtwo': ['Psychic', null],
+            'Gengar': ['Ghost', 'Poison'],
+            'Gyarados': ['Water', 'Flying'],
+            'Dragonite': ['Dragon', 'Flying'],
+            'Snorlax': ['Normal', null],
+            'Eevee': ['Normal', null]
+        };
+        
+        // Fonction pour afficher un message
+        function showMessage(message, type = 'info') {
+            const messageContainer = document.getElementById('messageContainer');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message message-${type}`;
+            messageElement.textContent = message;
+            
+            // Ajouter un bouton de fermeture
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+            closeButton.className = 'float-right font-bold';
+            closeButton.onclick = function() {
+                messageContainer.removeChild(messageElement);
+            };
+            
+            messageElement.prepend(closeButton);
+            messageContainer.appendChild(messageElement);
+            
+            // Faire disparaître le message après 5 secondes pour les messages d'info
+            if (type === 'info') {
+                setTimeout(() => {
+                    if (messageContainer.contains(messageElement)) {
+                        messageContainer.removeChild(messageElement);
+                    }
+                }, 5000);
+            }
+        }
+        
+        // Fonction pour rechercher des Pokémon (maintenant instantanée)
+        function searchPokemon() {
+            const searchInput = document.getElementById('pokemonSearch').value.toLowerCase().trim();
+            
+            if (searchInput.length === 0) {
+                // Si la recherche est vide, afficher tous les Pokémon
+                displayPokemonSelection(allPokemon);
+                return;
+            }
+            
+            // Filtrer les Pokémon qui correspondent à la recherche
+            const filteredPokemon = allPokemon.filter(pokemon => 
+                pokemon.toLowerCase().includes(searchInput)
+            );
+            
+            // Afficher les résultats
+            displayPokemonSelection(filteredPokemon);
+            
+            // Afficher un message si très peu de résultats
+            if (filteredPokemon.length === 0) {
+                showMessage(`Aucun Pokémon trouvé pour "${searchInput}".`, 'info');
+            }
+        }
+        
+        // Fonction pour afficher la sélection de Pokémon
+        function displayPokemonSelection(pokemonList) {
+            const grid = document.getElementById('pokemonGrid');
+            grid.innerHTML = '';
+            
+            // Mettre à jour le titre de la section avec le nombre de Pokémon
+            const selectionInfo = document.getElementById('selectionInfo');
+            if (selectionInfo) {
+                // Ajouter un span pour le nombre de Pokémon s'il n'existe pas déjà
+                let pokemonCountSpan = document.getElementById('pokemonCount');
+                if (!pokemonCountSpan) {
+                    pokemonCountSpan = document.createElement('span');
+                    pokemonCountSpan.id = 'pokemonCount';
+                    selectionInfo.appendChild(document.createTextNode(' | '));
+                    selectionInfo.appendChild(document.createTextNode('Pokémon disponibles: '));
+                    selectionInfo.appendChild(pokemonCountSpan);
+                }
+                pokemonCountSpan.textContent = pokemonList.length;
+            }
+            
+            // Afficher chaque Pokémon
+            pokemonList.forEach(pokemon => {
+                const card = document.createElement('div');
+                card.className = 'pokemon-card';
+                card.dataset.pokemon = pokemon;
+                
+                // Image du Pokémon
+                const img = document.createElement('img');
+                img.src = `https://img.pokemondb.net/artwork/large/${pokemon.toLowerCase()}.jpg`;
+                img.alt = pokemon;
+                img.onerror = function() {
+                    this.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/0.png';
+                };
+                
+                // Nom du Pokémon
+                const name = document.createElement('div');
+                name.className = 'pokemon-name';
+                name.textContent = pokemon;
+                
+                // Types du Pokémon
+                const typesContainer = document.createElement('div');
+                typesContainer.className = 'pokemon-types';
+                
+                // Vérifier d'abord dans allPokemonTypes (API)
+                if (allPokemonTypes[pokemon]) {
+                    const types = allPokemonTypes[pokemon];
+                    types.forEach(type => {
+                        if (type) {
+                            const typePill = document.createElement('span');
+                            typePill.className = `type-pill type-${type.toLowerCase()}`;
+                            typePill.textContent = type;
+                            typesContainer.appendChild(typePill);
+                        }
+                    });
+                } else if (pokemonTypes[pokemon]) {
+                    // Fallback sur les types prédéfinis si disponibles
+                    const types = pokemonTypes[pokemon];
+                    types.forEach(type => {
+                        if (type) {
+                            const typePill = document.createElement('span');
+                            typePill.className = `type-pill type-${type.toLowerCase()}`;
+                            typePill.textContent = type;
+                            typesContainer.appendChild(typePill);
+                        }
+                    });
+                } else {
+                    // Afficher un type générique en dernier recours
+                    const typePill = document.createElement('span');
+                    typePill.className = 'type-pill type-normal';
+                    typePill.textContent = 'Normal';
+                    typesContainer.appendChild(typePill);
+                }
+                
+                // Ajouter les éléments à la carte
+                card.appendChild(img);
+                card.appendChild(name);
+                card.appendChild(typesContainer);
+                
+                // Gérer la sélection du Pokémon
+                card.addEventListener('click', () => {
+                    togglePokemonSelection(pokemon, card);
+                });
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        // Fonction pour mettre à jour l'affichage des Pokémon sélectionnés
+        function updateSelectedPokemonDisplay() {
+            const container = document.getElementById('selectedPokemonList');
+            const tagsContainer = document.getElementById('selectedPokemonTags');
+            
+            // Mettre à jour le compteur
+            document.getElementById('selectedCount').textContent = selectedPokemon.length;
+            
+            // Afficher ou masquer le conteneur selon qu'il y a des Pokémon sélectionnés
+            if (selectedPokemon.length > 0) {
+                container.classList.remove('hidden');
+                
+                // Vider et recréer les tags
+                tagsContainer.innerHTML = '';
+                
+                selectedPokemon.forEach(pokemon => {
+                    const tag = document.createElement('div');
+                    tag.className = 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center';
+                    
+                    // Ajouter le nom du Pokémon
+                    const name = document.createElement('span');
+                    name.textContent = pokemon;
+                    
+                    // Ajouter un bouton pour supprimer
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.className = 'ml-2 text-blue-600 hover:text-blue-800 font-bold';
+                    removeBtn.onclick = function(e) {
+                        e.stopPropagation(); // Empêcher la propagation de l'événement
+                        removePokemonSelection(pokemon);
+                    };
+                    
+                    tag.appendChild(name);
+                    tag.appendChild(removeBtn);
+                    tagsContainer.appendChild(tag);
+                });
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+        
+        // Fonction pour supprimer un Pokémon de la sélection
+        function removePokemonSelection(pokemon) {
+            const index = selectedPokemon.indexOf(pokemon);
+            if (index !== -1) {
+                selectedPokemon.splice(index, 1);
+                
+                // Mettre à jour l'affichage des tags
+                updateSelectedPokemonDisplay();
+                
+                // Mettre à jour la classe des cartes
+                const cards = document.querySelectorAll('.pokemon-card');
+                cards.forEach(card => {
+                    if (card.dataset.pokemon === pokemon) {
+                        card.classList.remove('selected');
+                    }
+                });
+            }
+        }
+        
+        // Fonction pour basculer la sélection d'un Pokémon (mise à jour)
+        function togglePokemonSelection(pokemon, card) {
+            const index = selectedPokemon.indexOf(pokemon);
+            
+            if (index === -1) {
+                // Si le Pokémon n'est pas déjà sélectionné
+                if (selectedPokemon.length < 6) {
+                    selectedPokemon.push(pokemon);
+                    card.classList.add('selected');
+                    
+                    // Mettre à jour l'affichage des Pokémon sélectionnés
+                    updateSelectedPokemonDisplay();
+                } else {
+                    showMessage('Vous ne pouvez pas sélectionner plus de 6 Pokémon.', 'error');
+                }
+            } else {
+                // Si le Pokémon est déjà sélectionné, le désélectionner
+                selectedPokemon.splice(index, 1);
+                card.classList.remove('selected');
+                
+                // Mettre à jour l'affichage des Pokémon sélectionnés
+                updateSelectedPokemonDisplay();
+            }
+        }
+        
+        // Fonction pour trouver les counters
+        function findCounters() {
+            if (selectedPokemon.length === 0) {
+                showMessage('Veuillez sélectionner au moins un Pokémon.', 'error');
+                return;
+            }
+            
+            // Afficher le conteneur de résultats et le loader
+            document.getElementById('resultsContainer').classList.remove('hidden');
+            document.getElementById('resultsLoader').classList.remove('hidden');
+            document.getElementById('counterResults').innerHTML = '';
+            
+            // Afficher un message d'attente
+            showMessage('Recherche des counters en cours avec le modèle prédictif... Cela peut prendre jusqu\'à une minute.', 'info');
+            
+            // Récupérer le nombre de counters à afficher
+            const counterCount = document.getElementById('counterCount').value;
+            
+            // Traiter les Pokémon un par un pour éviter de surcharger l'API
+            processNextPokemon(0, selectedPokemon, counterCount);
+        }
+        
+        // Fonction pour traiter les Pokémon un par un
+        function processNextPokemon(index, pokemonList, counterCount) {
+            if (index >= pokemonList.length) {
+                // Tous les Pokémon ont été traités
+                document.getElementById('resultsLoader').classList.add('hidden');
+                showMessage('Recherche terminée!', 'success');
+                return;
+            }
+            
+            const pokemon = pokemonList[index];
+            console.log(`Envoi de requête pour ${pokemon} avec ${counterCount} counters (${index + 1}/${pokemonList.length})`);
+            
+            // S'assurer que l'URL est correcte
+            const url = `${apiBaseUrl}/counters/${encodeURIComponent(pokemon)}?top_k=${counterCount}`;
+            console.log(`URL de requête: ${url}`);
+            
+            // Créer un contrôleur d'abandon pour gérer le timeout manuellement
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 secondes de timeout
+            
+            // Afficher un message de progression
+            showMessage(`Traitement de ${pokemon} (${index + 1}/${pokemonList.length})...`, 'info');
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                signal: controller.signal
+            })
+            .then(response => {
+                // Annuler le timeout car la requête a réussi
+                clearTimeout(timeoutId);
+                
+                console.log(`Réponse reçue pour ${pokemon}: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(`Données reçues pour ${pokemon}:`, data);
+                
+                // Vérifier si les données sont au format attendu
+                let processedData;
+                if (Array.isArray(data)) {
+                    // Si c'est un tableau, l'envelopper dans un objet avec target_pokemon
+                    processedData = {
+                        target_pokemon: pokemon,
+                        counters: data
+                    };
+                } else if (data && typeof data === 'object') {
+                    // Si c'est déjà un objet, s'assurer qu'il a les propriétés nécessaires
+                    if (!data.target_pokemon) {
+                        data.target_pokemon = pokemon;
+                    }
+                    if (!data.counters && Array.isArray(data)) {
+                        data.counters = data;
+                    }
+                    processedData = data;
+                } else {
+                    // Format inattendu, créer un objet par défaut
+                    processedData = {
+                        target_pokemon: pokemon,
+                        counters: []
+                    };
+                }
+                
+                // Afficher les résultats pour ce Pokémon
+                displayCountersResults(processedData.target_pokemon, processedData);
+                
+                // Passer au Pokémon suivant
+                setTimeout(() => {
+                    processNextPokemon(index + 1, pokemonList, counterCount);
+                }, 500);
+            })
+            .catch(error => {
+                // Annuler le timeout en cas d'erreur
+                clearTimeout(timeoutId);
+                
+                console.error(`Erreur lors de la recherche de counters pour ${pokemon}:`, error);
+                
+                // Vérifier si c'est une erreur de timeout
+                let errorMessage = error.message;
+                let isTimeout = error.name === 'AbortError' || errorMessage.includes('timed out');
+                
+                if (isTimeout) {
+                    showMessage(`La recherche de counters pour ${pokemon} a pris trop de temps. Utilisation des données statistiques.`, 'error');
+                    
+                    // Essayer de récupérer les counters depuis l'API locale
+                    return fetch(`${apiBaseUrl}/local/counters/${encodeURIComponent(pokemon)}?top_k=${counterCount}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Afficher les résultats du mode de secours
+                            displayCountersResults(pokemon, data);
+                            
+                            // Passer au Pokémon suivant
+                            setTimeout(() => {
+                                processNextPokemon(index + 1, pokemonList, counterCount);
+                            }, 500);
+                        })
+                        .catch(localError => {
+                            console.error(`Erreur lors de la récupération locale pour ${pokemon}:`, localError);
+                            
+                            // Afficher des données de secours en cas d'erreur
+                            displayCountersResults(pokemon, {
+                                target_pokemon: pokemon,
+                                counters: [{
+                                    pokemon: "Garchomp",
+                                    win_probability: 0.85,
+                                    original_win_probability: 0.78,
+                                    source: "⚠️ Secours (timeout API)",
+                                    reasons: ["⚠️ Mode secours - L'API a mis trop de temps à répondre", 
+                                              "Les counters sont basés sur les statistiques brutes"],
+                                    types: ["Dragon", "Ground"],
+                                    stats: {
+                                        hp: 108,
+                                        attack: 130,
+                                        defense: 95,
+                                        sp_attack: 80,
+                                        sp_defense: 85,
+                                        speed: 102,
+                                    }
+                                }]
+                            });
+                            
+                            // Passer au Pokémon suivant
+                            setTimeout(() => {
+                                processNextPokemon(index + 1, pokemonList, counterCount);
+                            }, 500);
+                        });
+                } else {
+                    showMessage(`Erreur lors de la recherche de counters pour ${pokemon}: ${error.message}`, 'error');
+                    
+                    // Afficher des données de secours en cas d'erreur
+                    displayCountersResults(pokemon, {
+                        target_pokemon: pokemon,
+                        counters: [{
+                            pokemon: "Garchomp",
+                            win_probability: 0.85,
+                            original_win_probability: 0.78,
+                            source: "⚠️ Secours (erreur client)",
+                            reasons: ["⚠️ Mode secours - Erreur lors de la requête", error.message],
+                            types: ["Dragon", "Ground"],
+                            stats: {
+                                hp: 108,
+                                attack: 130,
+                                defense: 95,
+                                sp_attack: 80,
+                                sp_defense: 85,
+                                speed: 102,
+                            }
+                        }]
+                    });
+                    
+                    // Passer au Pokémon suivant
+                    setTimeout(() => {
+                        processNextPokemon(index + 1, pokemonList, counterCount);
+                    }, 500);
+                }
+            });
+        }
+        
+        // Fonction pour afficher les résultats des counters
+        function displayCountersResults(targetPokemon, data) {
+            const resultsContainer = document.getElementById('counterResults');
+            
+            // Créer un conteneur pour ce Pokémon cible
+            const targetContainer = document.createElement('div');
+            targetContainer.className = 'mb-8';
+            
+            // Titre avec le nom du Pokémon cible
+            const title = document.createElement('h3');
+            title.className = 'text-lg font-bold mb-3';
+            title.textContent = `Counters pour ${targetPokemon}`;
+            
+            // Grille pour les cartes de counter
+            const counterGrid = document.createElement('div');
+            counterGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+            
+            // Vérifier si des counters ont été trouvés
+            if (!data.counters || data.counters.length === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'text-gray-500';
+                noResults.textContent = 'Aucun counter trouvé.';
+                targetContainer.appendChild(title);
+                targetContainer.appendChild(noResults);
+                resultsContainer.appendChild(targetContainer);
+                return;
+            }
+            
+            // Créer une carte pour chaque counter
+            data.counters.forEach(counter => {
+                const card = createCounterCard(counter);
+                counterGrid.appendChild(card);
+            });
+            
+            // Ajouter les éléments au conteneur
+            targetContainer.appendChild(title);
+            targetContainer.appendChild(counterGrid);
+            resultsContainer.appendChild(targetContainer);
+        }
+        
+        // Fonction pour créer une carte de counter
+        function createCounterCard(counter) {
+            const card = document.createElement('div');
+            card.className = 'bg-gray-50 rounded-lg shadow p-4';
+            
+            // En-tête avec le nom et l'image
+            const header = document.createElement('div');
+            header.className = 'flex items-center mb-3';
+            
+            const img = document.createElement('img');
+            img.src = `https://img.pokemondb.net/artwork/large/${counter.pokemon.toLowerCase()}.jpg`;
+            img.alt = counter.pokemon;
+            img.className = 'w-16 h-16 object-contain mr-3';
+            img.onerror = function() {
+                // Créer un placeholder directement en CSS sans référence à une image
+                this.style.display = 'none';
+                
+                // Créer un div pour remplacer l'image
+                const placeholder = document.createElement('div');
+                placeholder.textContent = counter.pokemon;
+                placeholder.style.backgroundColor = '#f0f0f0';
+                placeholder.style.color = '#333';
+                placeholder.style.width = '64px';
+                placeholder.style.height = '64px';
+                placeholder.style.display = 'flex';
+                placeholder.style.alignItems = 'center';
+                placeholder.style.justifyContent = 'center';
+                placeholder.style.margin = '0';
+                placeholder.style.borderRadius = '5px';
+                placeholder.style.fontSize = '10px';
+                placeholder.style.fontWeight = 'bold';
+                placeholder.style.textAlign = 'center';
+                placeholder.style.marginRight = '12px';
+                
+                // Ajouter le placeholder à la place de l'image
+                this.parentNode.insertBefore(placeholder, this);
+            };
+            
+            const nameContainer = document.createElement('div');
+            
+            const name = document.createElement('div');
+            name.className = 'font-bold text-lg';
+            name.textContent = counter.pokemon;
+            
+            // Types du Pokémon
+            const typesContainer = document.createElement('div');
+            typesContainer.className = 'flex flex-wrap';
+            
+            if (counter.types) {
+                counter.types.forEach(type => {
+                    if (type) {
+                        const typePill = document.createElement('span');
+                        typePill.className = `type-pill type-${type.toLowerCase()}`;
+                        typePill.textContent = type;
+                        typesContainer.appendChild(typePill);
+                    }
+                });
+            }
+            
+            nameContainer.appendChild(name);
+            nameContainer.appendChild(typesContainer);
+            
+            header.appendChild(img);
+            header.appendChild(nameContainer);
+            
+            // Afficher la source des données
+            const sourceInfo = document.createElement('div');
+            sourceInfo.className = 'text-xs text-gray-500 mt-1';
+            sourceInfo.textContent = `Source: ${counter.source || 'Non spécifiée'}`;
+            nameContainer.appendChild(sourceInfo);
+            
+            // Probabilité de victoire avec barre de progression circulaire
+            const probabilitySection = document.createElement('div');
+            probabilitySection.className = 'flex items-center justify-between mb-3';
+            
+            const probabilityLabel = document.createElement('div');
+            probabilityLabel.className = 'text-sm font-medium';
+            probabilityLabel.textContent = 'Probabilité de victoire:';
+            
+            const progressRing = document.createElement('div');
+            progressRing.className = 'progress-ring';
+            
+            const winProbability = counter.win_probability;
+            const radius = 25;
+            const circumference = 2 * Math.PI * radius;
+            const dashoffset = circumference * (1 - winProbability);
+            
+            // Déterminer la couleur en fonction de la probabilité
+            let strokeColor;
+            if (winProbability >= 0.8) {
+                strokeColor = '#4CAF50'; // Vert pour excellent
+            } else if (winProbability >= 0.65) {
+                strokeColor = '#8BC34A'; // Vert clair pour bon
+            } else if (winProbability >= 0.5) {
+                strokeColor = '#FFC107'; // Jaune pour moyen
+            } else {
+                strokeColor = '#F44336'; // Rouge pour mauvais
+            }
+            
+            progressRing.innerHTML = `
+                <svg class="progress-ring__circle" width="60" height="60">
+                    <circle
+                        stroke="#e6e6e6"
+                        stroke-width="5"
+                        fill="transparent"
+                        r="${radius}"
+                        cx="30"
+                        cy="30"
+                    />
+                    <circle
+                        stroke="${strokeColor}"
+                        stroke-width="5"
+                        fill="transparent"
+                        r="${radius}"
+                        cx="30"
+                        cy="30"
+                        stroke-dasharray="${circumference} ${circumference}"
+                        stroke-dashoffset="${dashoffset}"
+                    />
+                </svg>
+                <div class="progress-ring__text">${Math.round(winProbability * 100)}%</div>
+            `;
+            
+            probabilitySection.appendChild(probabilityLabel);
+            probabilitySection.appendChild(progressRing);
+            
+            // Avantages (raisons pour lesquelles c'est un bon counter)
+            const advantagesSection = document.createElement('div');
+            advantagesSection.className = 'mt-4';
+            
+            const advantagesTitle = document.createElement('div');
+            advantagesTitle.className = 'font-medium mb-2';
+            advantagesTitle.textContent = 'Avantages:';
+            
+            const advantagesList = document.createElement('ul');
+            advantagesList.className = 'text-sm text-gray-700 list-disc pl-5';
+            
+            if (counter.reasons && counter.reasons.length > 0) {
+                counter.reasons.forEach(reason => {
+                    const item = document.createElement('li');
+                    item.textContent = reason;
+                    advantagesList.appendChild(item);
+                });
+            } else {
+                const noReasons = document.createElement('li');
+                noReasons.textContent = 'Aucune information disponible';
+                advantagesList.appendChild(noReasons);
+            }
+            
+            advantagesSection.appendChild(advantagesTitle);
+            advantagesSection.appendChild(advantagesList);
+            
+            // Statistiques (optionnel)
+            let statsSection = '';
+            if (counter.stats) {
+                statsSection = document.createElement('div');
+                statsSection.className = 'mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500';
+                statsSection.innerHTML = `
+                    <div class="grid grid-cols-3 gap-1">
+                        <div>HP: ${counter.stats.hp}</div>
+                        <div>Atk: ${counter.stats.attack}</div>
+                        <div>Def: ${counter.stats.defense}</div>
+                        <div>SpA: ${counter.stats.sp_attack}</div>
+                        <div>SpD: ${counter.stats.sp_defense}</div>
+                        <div>Vit: ${counter.stats.speed}</div>
+                    </div>
+                `;
+            }
+            
+            // Assembler la carte
+            card.appendChild(header);
+            card.appendChild(probabilitySection);
+            card.appendChild(advantagesSection);
+            if (statsSection) {
+                card.appendChild(statsSection);
+            }
+            
+            return card;
+        }
+        
+        // Initialisation - Chargement des types en une seule requête
+        document.addEventListener('DOMContentLoaded', () => {
+            // Afficher un message de chargement
+            showMessage('Chargement des Pokémon en cours...', 'info');
+            
+            // Afficher le loader de sélection
+            document.getElementById('selectionLoader').style.display = 'block';
+            
+            // Charger d'abord tous les types de Pokémon en une seule requête
+            fetch('/api/pokemon/types')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(typesData => {
+                    console.log(`Types récupérés pour ${Object.keys(typesData).length} Pokémon`);
+                    allPokemonTypes = typesData;
+                    
+                    // Maintenant charger la liste des Pokémon
+                    return fetch('/api/pokemon');
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        allPokemon = data;
+                        console.log(`Chargement de ${allPokemon.length} Pokémon`);
+                        
+                        // Masquer le loader
+                        document.getElementById('selectionLoader').style.display = 'none';
+                        
+                        // Afficher les Pokémon avec les types récupérés
+                        displayPokemonSelection(allPokemon);
+                        
+                        // Afficher un message de succès
+                        showMessage(`Chargement terminé. ${allPokemon.length} Pokémon disponibles.`, 'success');
+                    } else {
+                        throw new Error("Format de données inattendu");
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement:', error);
+                    
+                    // Vérifier si l'élément existe avant de modifier son style
+                    const loader = document.getElementById('selectionLoader');
+                    if (loader) {
+                        loader.style.display = 'none';
+                    }
+                    
+                    // Afficher un message d'erreur
+                    showMessage(`Erreur lors du chargement: ${error.message}. Utilisation des données de secours.`, 'error');
+                    
+                    // Charger la liste des Pokémon depuis l'API locale en cas d'échec
+                    fetch('/api/local/pokemon')
+                        .then(response => response.json())
+                        .then(localData => {
+                            allPokemon = localData;
+                            displayPokemonSelection(allPokemon);
+                        })
+                        .catch(localError => {
+                            console.error('Erreur lors du chargement local:', localError);
+                            // Utiliser une liste de secours minimale
+                            allPokemon = ["Pikachu", "Charizard", "Bulbasaur", "Squirtle", "Mewtwo"];
+                            displayPokemonSelection(allPokemon);
+                        });
+                });
+            
+            // Événements
+            document.getElementById('pokemonSearch').addEventListener('input', searchPokemon);
+            document.getElementById('findCountersButton').addEventListener('click', findCounters);
+            
+            // Initialiser l'affichage des Pokémon sélectionnés
+            updateSelectedPokemonDisplay();
+        });
+    </script>
+</body>
+</html> 

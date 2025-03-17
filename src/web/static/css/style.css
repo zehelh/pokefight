@@ -1,0 +1,464 @@
+/* Styles de base pour l'application */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Styles généraux */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Navigation */
+nav {
+    background-color: #e3350d;
+    color: white;
+    padding: 1rem 0;
+}
+
+nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+}
+
+nav .logo {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-left: 0;
+}
+
+nav .logo img {
+    margin-right: 10px;
+}
+
+/* Hero section */
+.hero {
+    background-color: #f4f4f4;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: #666;
+}
+
+.button {
+    display: inline-block;
+    background-color: #e3350d;
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #c62c09;
+}
+
+/* Features section */
+.features {
+    padding: 4rem 0;
+}
+
+.features h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.feature-card {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: #e3350d;
+}
+
+.feature-card p {
+    color: #666;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 2rem 0;
+    text-align: center;
+}
+
+/* Loader */
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #e3350d;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Message containers */
+.message {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    position: relative;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.message.info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.close-btn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.2em;
+    line-height: 1;
+    border: none;
+    background: transparent;
+}
+
+/* Styles de la navbar */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Styles des cartes */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+/* Styles pour les types de Pokémon */
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.type-normal { background-color: #A8A878; color: white; }
+.type-fire { background-color: #F08030; color: white; }
+.type-water { background-color: #6890F0; color: white; }
+.type-electric { background-color: #F8D030; color: black; }
+.type-grass { background-color: #78C850; color: white; }
+.type-ice { background-color: #98D8D8; color: black; }
+.type-fighting { background-color: #C03028; color: white; }
+.type-poison { background-color: #A040A0; color: white; }
+.type-ground { background-color: #E0C068; color: black; }
+.type-flying { background-color: #A890F0; color: white; }
+.type-psychic { background-color: #F85888; color: white; }
+.type-bug { background-color: #A8B820; color: white; }
+.type-rock { background-color: #B8A038; color: white; }
+.type-ghost { background-color: #705898; color: white; }
+.type-dragon { background-color: #7038F8; color: white; }
+.type-dark { background-color: #705848; color: white; }
+.type-steel { background-color: #B8B8D0; color: black; }
+.type-fairy { background-color: #EE99AC; color: white; }
+
+/* Styles pour les barres de statistiques */
+.stat-bar {
+    height: 0.5rem;
+    background-color: #e2e8f0;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+}
+
+.stat-hp { background-color: #ff5959; }
+.stat-attack { background-color: #f5ac78; }
+.stat-defense { background-color: #fae078; }
+.stat-sp-atk { background-color: #9db7f5; }
+.stat-sp-def { background-color: #a7db8d; }
+.stat-speed { background-color: #fa92b2; }
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Styles pour les probabilités */
+.probability-high {
+    color: #22c55e;
+}
+
+.probability-medium {
+    color: #eab308;
+}
+
+.probability-low {
+    color: #ef4444;
+}
+
+/* Styles pour les sections de la page d'accueil */
+.feature-section {
+    padding: 40px 0;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour le formulaire de recherche */
+.form-select, .form-control {
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+}
+
+.btn-danger {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+}
+
+/* Styles pour les résultats */
+#resultsContainer {
+    transition: all 0.3s ease;
+}
+
+/* Styles personnalisés pour compléter Tailwind CSS */
+
+/* Animation pour le spinner de chargement */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.custom-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Transitions fluides */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+/* Styles pour les cartes de Pokémon */
+.pokemon-card {
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.pokemon-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Styles pour les probabilités */
+.probability-high {
+    color: #22c55e;
+}
+
+.probability-medium {
+    color: #eab308;
+}
+
+.probability-low {
+    color: #ef4444;
+}
+
+/* Styles pour les badges */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-green {
+    background-color: #D1FAE5; /* green-100 */
+    color: #047857; /* green-700 */
+}
+
+.badge-blue {
+    background-color: #DBEAFE; /* blue-100 */
+    color: #1D4ED8; /* blue-700 */
+}
+
+.badge-red {
+    background-color: #FEE2E2; /* red-100 */
+    color: #B91C1C; /* red-700 */
+}
+
+.badge-yellow {
+    background-color: #FEF3C7; /* yellow-100 */
+    color: #B45309; /* yellow-700 */
+}
+
+/* Styles pour les tooltips */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #374151; /* gray-700 */
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 0.5rem;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Styles pour les images de Pokémon */
+.pokemon-image {
+    image-rendering: pixelated;
+}
+
+/* Styles pour les boutons personnalisés */
+.btn-pokemon {
+    background-color: #EF4444; /* red-500 */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-pokemon:hover {
+    background-color: #DC2626; /* red-600 */
+}
+
+.btn-pokemon:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5); /* red-500 with opacity */
+}
+
+/* Styles pour les sélecteurs personnalisés */
+.custom-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Styles responsifs */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .pokemon-card img {
+        height: 80px;
+    }
+} 

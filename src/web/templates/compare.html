@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparaison de Pokémon - PokéFight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <nav class="bg-red-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center font-bold text-2xl">
+                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">🎮</span>
+                    PokéFight
+                </a>
+                <div class="hidden md:block">
+                    <ul class="flex space-x-6">
+                        <li><a href="/" class="font-medium hover:text-red-200">Accueil</a></li>
+                        <li><a href="/search" class="font-medium hover:text-red-200">Recherche de Counters</a></li>
+                        <li><a href="/compare" class="font-medium hover:text-red-200 underline">Comparaison</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Comparer deux Pokémon</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <label for="pokemon1" class="block text-lg font-medium mb-2">Premier Pokémon</label>
+                <input type="text" id="pokemon1" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Entrez un nom de Pokémon...">
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <label for="pokemon2" class="block text-lg font-medium mb-2">Second Pokémon</label>
+                <input type="text" id="pokemon2" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Entrez un nom de Pokémon...">
+            </div>
+        </div>
+        
+        <div class="text-center mt-6">
+            <button id="compareBtn" class="bg-red-600 text-white px-8 py-3 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                Comparer
+            </button>
+        </div>
+        
+        <div id="comparison-results" class="mt-8 max-w-4xl mx-auto hidden">
+            <!-- Les résultats de comparaison seront affichés ici -->
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>PokéFight - Trouvez les meilleurs contre-Pokémon avec l'intelligence artificielle</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Charger la liste des Pokémon pour l'autocomplétion
+        fetch('/api/local/pokemon')
+            .then(response => response.json())
+            .then(pokemonList => {
+                if (Array.isArray(pokemonList)) {
+                    // Créer un datalist pour l'autocomplétion
+                    const datalist = document.createElement('datalist');
+                    datalist.id = 'pokemon-list';
+                    
+                    pokemonList.forEach(pokemon => {
+                        const option = document.createElement('option');
+                        option.value = pokemon;
+                        datalist.appendChild(option);
+                    });
+                    
+                    document.body.appendChild(datalist);
+                    
+                    // Attacher le datalist aux inputs
+                    document.getElementById('pokemon1').setAttribute('list', 'pokemon-list');
+                    document.getElementById('pokemon2').setAttribute('list', 'pokemon-list');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement de la liste des Pokémon:', error);
+            });
+        
+        // Gérer le clic sur le bouton de comparaison
+        document.getElementById('compareBtn').addEventListener('click', function() {
+            const pokemon1 = document.getElementById('pokemon1').value.trim();
+            const pokemon2 = document.getElementById('pokemon2').value.trim();
+            
+            if (!pokemon1 || !pokemon2) {
+                alert('Veuillez entrer deux Pokémon à comparer');
+                return;
+            }
+            
+            // Afficher un message de chargement
+            document.getElementById('comparison-results').innerHTML = '<div class="flex justify-center"><div class="loader"></div></div>';
+            document.getElementById('comparison-results').classList.remove('hidden');
+            
+            // Faire la requête à l'API de comparaison (à implémenter)
+            console.log(`Comparaison entre ${pokemon1} et ${pokemon2}`);
+            
+            // Simulation de résultats pour le moment
+            setTimeout(() => {
+                document.getElementById('comparison-results').innerHTML = `
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-center">Résultats de la comparaison</h2>
+                        <p class="text-center mb-6">Cette fonctionnalité est en cours de développement.</p>
+                        <div class="flex justify-center">
+                            <div class="text-center mx-4">
+                                <h3 class="font-bold text-xl">${pokemon1}</h3>
+                                <p class="text-gray-600">En attente...</p>
+                            </div>
+                            <div class="text-center mx-4">
+                                <h3 class="font-bold text-xl">${pokemon2}</h3>
+                                <p class="text-gray-600">En attente...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        });
+    });
+    </script>
+
+    <style>
+    .loader {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #e3350d;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+</body>
+</html> 

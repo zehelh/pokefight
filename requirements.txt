@@ -1,0 +1,13 @@
+flask==2.3.3
+flask-cors
+pandas
+numpy
+scikit-learn
+xgboost
+joblib
+optuna==3.3.0
+matplotlib
+seaborn
+requests
+python-dotenv==1.0.0
+setuptools>=65.5.1 
